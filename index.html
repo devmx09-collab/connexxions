@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pride Match</title>
+  <style>
+    :root {
+      --bg: #121014;
+      --card: #1c1722;
+      --card-2: #241c2d;
+      --text: #f7ecff;
+      --muted: #bdaec9;
+      --accent: #ff4fa3;
+      --accent-2: #8b5cf6;
+      --pass: #ff5b6e;
+      --shadow: 0 20px 60px rgba(0,0,0,.45);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(139,92,246,.2), transparent 35%),
+        radial-gradient(circle at bottom, rgba(255,79,163,.12), transparent 40%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 18px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .brand {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: .3px;
+    }
+
+    .badge {
+      background: rgba(255,255,255,.08);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: .85rem;
+      color: var(--muted);
+    }
+
+    .stack {
+      position: relative;
+      height: 580px;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      position: absolute;
+      inset: 0;
+      border-radius: 28px;
+      overflow: hidden;
+      background: linear-gradient(180deg, var(--card), var(--card-2));
+      box-shadow: var(--shadow);
+      user-select: none;
+      touch-action: none;
+      transition: transform .25s ease, opacity .25s ease;
+    }
+
+    .card.back {
+      transform: scale(.96) translateY(12px);
+      opacity: .72;
+      filter: blur(.2px);
+    }
+
+    .photo {
+      height: 72%;
+      width: 100%;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .content {
+      padding: 18px;
+    }
+
+    .name-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+    }
+
+    .name {
+      font-size: 1.55rem;
+      font-weight: 800;
+    }
+
+    .distance {
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0 14px;
+    }
+
+    .tag {
+      background: rgba(255,255,255,.08);
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: .82rem;
+      color: var(--text);
+    }
+
+    .bio {
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: .95rem;
+      margin: 0;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 18px;
+      padding: 10px 14px;
+      border: 3px solid;
+      font-weight: 800;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      opacity: 0;
+      transition: opacity .12s ease;
+      z-index: 2;
+    }
+
+    .overlay.like {
+      right: 18px;
+      border-color: #53ffa5;
+      color: #53ffa5;
+      transform: rotate(12deg);
+    }
+
+    .overlay.nope {
+      left: 18px;
+      border-color: #ff7b7b;
+      color: #ff7b7b;
+      transform: rotate(-12deg);
+    }
+
+    .buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 18px;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      min-width: 120px;
+    }
+
+    .pass {
+      background: rgba(255,91,110,.16);
+      color: #ff9aa5;
+    }
+
+    .like {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+    }
+
+    .match {
+      position: fixed;
+      inset: 0;
+      background: rgba(10,8,12,.72);
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+      padding: 20px;
+    }
+
+    .match.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .match-card {
+      background: #23192d;
+      border-radius: 24px;
+      padding: 22px;
+      text-align: center;
+      max-width: 320px;
+      box-shadow: var(--shadow);
+    }
+
+    .match-card h2 {
+      margin: 0 0 8px;
+      font-size: 1.7rem;
+    }
+
+    .match-card p {
+      color: var(--muted);
+      margin: 0 0 18px;
+    }
+
+    .close {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      width: 100%;
+    }
+
+    @media (max-width: 430px) {
+      .stack { height: 540px; }
+      button { min-width: 110px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="brand">Pride Match</div>
+      <div class="badge">Queer-first dating</div>
+    </div>
+
+    <div class="stack">
+      <div class="card back" id="nextCard">
+        <div class="photo" id="nextPhoto"></div>
+      </div>
+
+      <div class="card" id="mainCard">
+        <div class="overlay nope" id="nopeOverlay">NOPE</div>
+        <div class="overlay like" id="likeOverlay">LIKE</div>
+        <div class="photo" id="mainPhoto"></div>
+        <div class="content">
+          <div class="name-row">
+            <div class="name" id="mainName"></div>
+            <div class="distance" id="mainDistance"></div>
+          </div>
+          <div class="tags" id="mainTags"></div>
+          <p class="bio" id="mainBio"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button class="pass" id="passBtn">Pass</button>
+      <button class="like" id="likeBtn">Like</button>
+    </div>
+  </div>
+
+  <div class="match" id="matchBanner" aria-hidden="true">
+    <div class="match-card">
+      <h2>It’s a match! 💜</h2>
+      <p>You and Alex liked each other.</p>
+      <button class="close" id="closeMatch">Nice</button>
+    </div>
+  </div>
+
+  <script>
+    const profiles = [
+      {
+        name: "Alex, 29",
+        distance: "📍 8 mi",
+        photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1200&q=80",
+        tags: ["she/her", "trans woman", "bi", "music • cafes • art"],
+        bio: "Sweet, nerdy, and into late-night playlists, ramen dates, and silly flirting. Looking for real chemistry and kind energy."
+      },
+      {
+        name: "Jordan, 27",
+        distance: "📍 4 mi",
+        photo: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80",
+        tags: ["they/them", "nonbinary", "queer", "books • hiking • film"],
+        bio: "Big on softness, good banter, and slow-burn connections. Coffee, bookstores, and nature walks are my happy place."
+      },
+      {
+        name: "Mina, 31",
+        distance: "📍 12 mi",
+        photo: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=1200&q=80",
+        tags: ["she/they", "lesbian", "design", "karaoke • food • travel"],
+        bio: "Design nerd with chaotic karaoke energy. I love bold style, kind people, and trying every dumpling place in town."
+      }
+    ];
+
+    let index = 0;
+    let startX = 0;
+    let currentX = 0;
+    let dragging = false;
+    let locked = false;
+
+    const mainCard = document.getElementById("mainCard");
+    const nextCard = document.getElementById("nextCard");
+    const mainPhoto = document.getElementById("mainPhoto");
+    const nextPhoto = document.getElementById("nextPhoto");
+    const mainName = document.getElementById("mainName");
+    const mainDistance = document.getElementById("mainDistance");
+    const mainTags = document.getElementById("mainTags");
+    const mainBio = document.getElementById("mainBio");
+    const passBtn = document.getElementById("passBtn");
+    const likeBtn = document.getElementById("likeBtn");
+    const nopeOverlay = document.getElementById("nopeOverlay");
+    const likeOverlay = document.getElementById("likeOverlay");
+    const matchBanner = document.getElementById("matchBanner");
+    const closeMatch = document.getElementById("closeMatch");
+
+    function renderCard() {
+      const p = profiles[index % profiles.length];
+      const n = profiles[(index + 1) % profiles.length];
+
+      mainPhoto.style.backgroundImage = `url('${p.photo}')`;
+      nextPhoto.style.backgroundImage = `url('${n.photo}')`;
+      mainName.textContent = p.name;
+      mainDistance.textContent = p.distance;
+      mainBio.textContent = p.bio;
+      mainTags.innerHTML = p.tags.map(t => `<span class="tag">${t}</span>`).join("");
+
+      mainCard.style.transition = "none";
+      mainCard.style.transform = "translateX(0px) rotate(0deg)";
+      mainCard.style.opacity = "1";
+      nopeOverlay.style.opacity = "0";
+      likeOverlay.style.opacity = "0";
+      locked = false;
+    }
+
+    function advance(direction) {
+      if (locked) return;
+      locked = true;
+
+      const width = window.innerWidth;
+      const offX = direction === "like" ? width : -width;
+      const rot = direction === "like" ? 18 : -18;
+
+      mainCard.style.transition = "transform .25s ease, opacity .25s ease";
+      mainCard.style.transform = `translateX(${offX}px) rotate(${rot}deg)`;
+      mainCard.style.opacity = "0";
+
+      setTimeout(() => {
+        if (direction === "like" && index === 0) {
+          matchBanner.classList.add("show");
+          matchBanner.setAttribute("aria-hidden", "false");
+        }
+
+        index = (index + 1) % profiles.length;
+        renderCard();
+      }, 220);
+    }
+
+    mainCard.addEventListener("pointerdown", (e) => {
+      if (locked) return;
+      dragging = true;
+      startX = e.clientX;
+      currentX = 0;
+      mainCard.setPointerCapture(e.pointerId);
+    });
+
+    mainCard.addEventListener("pointermove", (e) => {
+      if (!dragging || locked) return;
+
+      currentX = e.clientX - startX;
+      const rot = currentX / 18;
+      mainCard.style.transform = `translateX(${currentX}px) rotate(${rot}deg)`;
+
+      const opacity = Math.min(Math.abs(currentX) / 120, 1);
+      if (currentX > 0) {
+        likeOverlay.style.opacity = opacity;
+        nopeOverlay.style.opacity = "0";
+      } else {
+        nopeOverlay.style.opacity = opacity;
+        likeOverlay.style.opacity = "0";
+      }
+    });
+
+    function endDrag() {
+      if (!dragging || locked) return;
+      dragging = false;
+
+      if (Math.abs(currentX) > 110) {
+        advance(currentX > 0 ? "like" : "pass");
+      } else {
+        renderCard();
+      }
+    }
+
+    mainCard.addEventListener("pointerup", endDrag);
+    mainCard.addEventListener("pointercancel", endDrag);
+
+    passBtn.addEventListener("click", () => advance("pass"));
+    likeBtn.addEventListener("click", () => advance("like"));
+
+    closeMatch.addEventListener("click", () => {
+      matchBanner.classList.remove("show");
+      matchBanner.setAttribute("aria-hidden", "true");
+    });
+
+    matchBanner.addEventListener("click", (e) => {
+      if (e.target === matchBanner) {
+        matchBanner.classList.remove("show");
+        matchBanner.setAttribute("aria-hidden", "true");
+      }
+    });
+
+    renderCard();
+  </script>
+</body>
+</html>
