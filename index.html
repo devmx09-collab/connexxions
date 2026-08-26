@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pride Match</title>
+  <style>
+    :root{
+      --bg:#121018;
+      --panel:#1b1724;
+      --panel-2:#221b2e;
+      --text:#f5efff;
+      --muted:#c8b9df;
+      --accent:#c86bff;
+      --accent-2:#ff7eb6;
+      --good:#7ae582;
+      --bad:#ff6b6b;
+      --line:rgba(255,255,255,.08);
+      --shadow:0 18px 50px rgba(0,0,0,.4);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      background:radial-gradient(circle at top, #24173a 0%, var(--bg) 45%);
+      color:var(--text);
+    }
+    .app{
+      min-height:100dvh;
+      display:flex;
+      flex-direction:column;
+      padding:18px 14px 92px;
+      max-width:520px;
+      margin:0 auto;
+    }
+    header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:14px;
+    }
+    h1{margin:0;font-size:1.4rem}
+    .icon-btn{
+      width:40px;height:40px;border:0;border-radius:50%;
+      background:var(--panel); color:var(--text);
+      box-shadow:var(--shadow);
+    }
+    .screen{display:none; animation:fade .2s ease}
+    .screen.active{display:block}
+    .subtitle{color:var(--muted); margin:0 0 14px; line-height:1.5}
+    .card{
+      background:linear-gradient(180deg,var(--panel),var(--panel-2));
+      border:1px solid var(--line);
+      border-radius:28px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+    }
+    .photo{
+      width:100%;
+      aspect-ratio: 0.9/1;
+      object-fit:cover;
+      display:block;
+    }
+    .card-body{padding:14px}
+    .toprow{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+    .name{font-size:1.35rem;font-weight:800;margin:0}
+    .meta{color:var(--muted);font-size:.95rem;margin-top:4px}
+    .distance{white-space:nowrap;color:#ffd6ef;font-size:.95rem;margin-top:4px}
+    .tags{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+    .tag{
+      font-size:.82rem;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#2a2238;
+      border:1px solid var(--line);
+      color:#e9ddff;
+    }
+    .bio{color:#f0e8ff; line-height:1.5; margin:0}
+    .actions{
+      display:flex; gap:10px; justify-content:space-between; margin-top:14px;
+    }
+    .action{
+      flex:1;
+      border:0;
+      border-radius:18px;
+      padding:14px 12px;
+      font-weight:700;
+      color:var(--text);
+      background:#2a2238;
+    }
+    .action.like{background:rgba(122,229,130,.16)}
+    .action.nope{background:rgba(255,107,107,.15)}
+    .action.super{background:rgba(200,107,255,.18)}
+    .nav{
+      position:fixed;
+      left:50%;
+      bottom:14px;
+      transform:translateX(-50%);
+      width:min(520px, calc(100% - 20px));
+      background:rgba(27,23,36,.9);
+      backdrop-filter:blur(12px);
+      border:1px solid var(--line);
+      border-radius:24px;
+      display:flex;
+      justify-content:space-around;
+      padding:10px 6px;
+      box-shadow:var(--shadow);
+    }
+    .nav button{
+      background:none;border:0;color:var(--muted);font-size:.8rem;display:flex;flex-direction:column;align-items:center;gap:4px;
+      min-width:56px;
+    }
+    .nav button.active{color:var(--text)}
+    .pill-msg{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:16px;
+      background:rgba(200,107,255,.12);
+      border:1px solid rgba(200,107,255,.25);
+      display:none;
+    }
+    .pill-msg.show{display:block}
+    @keyframes fade{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Pride Match</h1>
+      <button class="icon-btn" id="gearBtn">⚙️</button>
+    </header>
+
+    <main>
+      <section class="screen active" id="homeScreen">
+        <p class="subtitle">A queer-first dating space centered on trans and LGBTQ+ connection.</p>
+
+        <div class="card" id="profileCard">
+          <img class="photo" id="profilePhoto" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80" alt="profile photo">
+          <div class="card-body">
+            <div class="toprow">
+              <div>
+                <p class="name" id="profileName">Alex, 29</p>
+                <div class="meta" id="profileMeta">she/her • trans woman • bi</div>
+              </div>
+              <div class="distance" id="profileDistance">📍 8 mi</div>
+            </div>
+
+            <div class="tags" id="profileTags">
+              <span class="tag">music + cafés + art</span>
+              <span class="tag">late-night playlists</span>
+            </div>
+
+            <p class="bio" id="profileBio">
+              Sweet nerd, into late night playlists, ramen dates, and silly flirting. Looking for real chemistry and kind energy.
+            </p>
+
+            <div class="actions">
+              <button class="action nope" id="dislikeBtn">✕ Pass</button>
+              <button class="action super" id="superBtn">★ Like+</button>
+              <button class="action like" id="likeBtn">♥ Like</button>
+            </div>
+
+            <div class="pill-msg" id="messageBox"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="profileScreen">
+        <div class="card">
+          <div class="card-body">
+            <h2 style="margin-top:0">Your Profile</h2>
+            <p class="subtitle">This is where your own profile editor will go next.</p>
+            <button class="action super" id="editBtn">Edit Profile</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="searchScreen">
+        <div class="card"><div class="card-body"><h2 style="margin-top:0">Search</h2><p class="subtitle">Filters and discovery tools go here.</p></div></div>
+      </section>
+
+      <section class="screen" id="likesScreen">
+        <div class="card"><div class="card-body"><h2 style="margin-top:0">Likes</h2><p class="subtitle">Your matches and likes go here.</p></div></div>
+      </section>
+
+      <section class="screen" id="chatScreen">
+        <div class="card"><div class="card-body"><h2 style="margin-top:0">Chat</h2><p class="subtitle">Your conversations go here.</p></div></div>
+      </section>
+
+      <section class="screen" id="donateScreen">
+        <div class="card"><div class="card-body"><h2 style="margin-top:0">Donate</h2><p class="subtitle">Support the project here.</p></div></div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="nav">
+    <button class="active" data-screen="profileScreen">👤<span>Profile</span></button>
+    <button data-screen="chatScreen">💬<span>Chat</span></button>
+    <button data-screen="searchScreen">🔎<span>Search</span></button>
+    <button data-screen="likesScreen">❤️<span>Likes</span></button>
+    <button data-screen="donateScreen">💖<span>Donate</span></button>
+  </nav>
+
+  <script>
+    const profiles = [
+      {
+        name: "Alex, 29",
+        meta: "she/her • trans woman • bi",
+        distance: "📍 8 mi",
+        photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80",
+        tags: ["music + cafés + art", "late-night playlists"],
+        bio: "Sweet nerd, into late night playlists, ramen dates, and silly flirting. Looking for real chemistry and kind energy."
+      },
+      {
+        name: "Mia, 26",
+        meta: "they/she • nonbinary • pan",
+        distance: "📍 3 mi",
+        photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=900&q=80",
+        tags: ["bookstores", "soft masc energy", "coffee walks"],
+        bio: "I love cozy dates, creative people, and honest conversation."
+      },
+      {
+        name: "Jules, 31",
+        meta: "he/they • trans masc • queer",
+        distance: "📍 12 mi",
+        photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=80",
+        tags: ["gaming", "tattoos", "memes"],
+        bio: "Builder of playlists, collector of bad puns, and big fan of low-pressure dates."
+      }
+    ];
+
+    let current = 0;
+    const els = {
+      name: document.getElementById("profileName"),
+      meta: document.getElementById("profileMeta"),
+      distance: document.getElementById("profileDistance"),
+      photo: document.getElementById("profilePhoto"),
+      tags: document.getElementById("profileTags"),
+      bio: document.getElementById("profileBio"),
+      msg: document.getElementById("messageBox"),
+      card: document.getElementById("profileCard"),
+    };
+
+    function renderProfile() {
+      const p = profiles[current];
+      els.name.textContent = p.name;
+      els.meta.textContent = p.meta;
+      els.distance.textContent = p.distance;
+      els.photo.src = p.photo;
+      els.tags.innerHTML = p.tags.map(t => `<span class="tag">${t}</span>`).join("");
+      els.bio.textContent = p.bio;
+      els.msg.classList.remove("show");
+      els.msg.textContent = "";
+    }
+
+    function flash(text) {
+      els.msg.textContent = text;
+      els.msg.classList.add("show");
+    }
+
+    function nextProfile() {
+      current = (current + 1) % profiles.length;
+      els.card.style.transform = "scale(.98)";
+      setTimeout(() => els.card.style.transform = "", 120);
+      renderProfile();
+    }
+
+    document.getElementById("likeBtn").onclick = () => { flash("You liked this profile."); setTimeout(nextProfile, 500); };
+    document.getElementById("dislikeBtn").onclick = () => { flash("Passed."); setTimeout(nextProfile, 500); };
+    document.getElementById("superBtn").onclick = () => { flash("Super liked!"); setTimeout(nextProfile, 500); };
+    document.getElementById("gearBtn").onclick = () => alert("Settings coming next.");
+
+    document.querySelectorAll(".nav button").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll(".nav button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+        document.getElementById(btn.dataset.screen).classList.add("active");
+      };
+    });
+
+    renderProfile();
+  </script>
+</body>
+</html>
