@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pride Match</title>
+  <style>
+    :root {
+      --bg: #121014;
+      --card: #1c1722;
+      --card-2: #241c2d;
+      --text: #f7ecff;
+      --muted: #bdaec9;
+      --accent: #ff4fa3;
+      --accent-2: #8b5cf6;
+      --pass: #ff5b6e;
+      --good: #53ffa5;
+      --shadow: 0 20px 60px rgba(0,0,0,.45);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(139,92,246,.2), transparent 35%),
+        radial-gradient(circle at bottom, rgba(255,79,163,.12), transparent 40%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 18px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: .3px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge, .mini-btn {
+      background: rgba(255,255,255,.08);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: .85rem;
+      color: var(--muted);
+      border: 0;
+    }
+
+    .mini-btn {
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .stats {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      flex: 1;
+      min-width: 92px;
+      background: rgba(255,255,255,.06);
+      border-radius: 16px;
+      padding: 10px 12px;
+      text-align: center;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.05rem;
+      margin-bottom: 3px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: .8rem;
+    }
+
+    .stack {
+      position: relative;
+      height: 580px;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      position: absolute;
+      inset: 0;
+      border-radius: 28px;
+      overflow: hidden;
+      background: linear-gradient(180deg, var(--card), var(--card-2));
+      box-shadow: var(--shadow);
+      user-select: none;
+      touch-action: none;
+      will-change: transform, opacity;
+      transition: transform .22s cubic-bezier(.2,.8,.2,1), opacity .22s ease;
+    }
+
+    .card.back {
+      transform: scale(.96) translateY(12px);
+      opacity: .72;
+      filter: blur(.2px);
+    }
+
+    .photo {
+      height: 72%;
+      width: 100%;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .content {
+      padding: 18px;
+    }
+
+    .name-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+    }
+
+    .name {
+      font-size: 1.55rem;
+      font-weight: 800;
+    }
+
+    .distance {
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0 14px;
+    }
+
+    .tag {
+      background: rgba(255,255,255,.08);
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: .82rem;
+      color: var(--text);
+    }
+
+    .bio {
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: .95rem;
+      margin: 0;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 18px;
+      padding: 10px 14px;
+      border: 3px solid;
+      font-weight: 800;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      opacity: 0;
+      transition: opacity .12s ease;
+      z-index: 2;
+    }
+
+    .overlay.like {
+      right: 18px;
+      border-color: var(--good);
+      color: var(--good);
+      transform: rotate(12deg);
+    }
+
+    .overlay.nope {
+      left: 18px;
+      border-color: #ff7b7b;
+      color: #ff7b7b;
+      transform: rotate(-12deg);
+    }
+
+    .buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 18px;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      min-width: 120px;
+    }
+
+    .pass {
+      background: rgba(255,91,110,.16);
+      color: #ff9aa5;
+    }
+
+    .like {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+    }
+
+    .match, .chat {
+      position: fixed;
+      inset: 0;
+      background: rgba(10,8,12,.72);
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+      padding: 20px;
+      z-index: 20;
+    }
+
+    .match.show, .chat.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .panel {
+      background: #23192d;
+      border-radius: 24px;
+      padding: 22px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel h2, .panel h3 {
+      margin: 0 0 8px;
+    }
+
+    .panel p {
+      color: var(--muted);
+      margin: 0 0 16px;
+    }
+
+    .full-btn, .ghost-btn {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .ghost-btn {
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+    }
+
+    .chat-box {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      height: 420px;
+    }
+
+    .messages {
+      flex: 1;
+      overflow: auto;
+      background: rgba(255,255,255,.04);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .msg {
+      max-width: 80%;
+      padding: 10px 12px;
+      border-radius: 16px;
+      margin: 0 0 10px;
+      line-height: 1.35;
+      font-size: .95rem;
+    }
+
+    .msg.me {
+      margin-left: auto;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+    }
+
+    .msg.them {
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+    }
+
+    .chat-input {
+      display: flex;
+      gap: 8px;
+    }
+
+    .chat-input input, .profile-form input, .profile-form textarea {
+      width: 100%;
+      border: 0;
+      outline: none;
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+      font: inherit;
+    }
+
+    .chat-input button, .profile-form button {
+      min-width: auto;
+      white-space: nowrap;
+    }
+
+    .profile-editor {
+      display: none;
+      margin-bottom: 14px;
+      background: rgba(255,255,255,.05);
+      border-radius: 20px;
+      padding: 14px;
+    }
+
+    .profile-editor.show {
+      display: block;
+    }
+
+    .profile-form {
+      display: grid;
+      gap: 10px;
+    }
+
+    .profile-form textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    .empty {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 24px;
+      color: var(--muted);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
+
+    .empty.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .empty h2 { color: var(--text); margin: 0 0 8px; }
+
+    @media (max-width: 430px) {
+      .stack { height: 540px; }
+      button { min-width: 110px; }
+      .chat-box { height: 380px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="brand">Pride Match</div>
+      <div class="top-actions">
+        <div class="badge">Queer-first dating</div>
+        <button class="mini-btn" id="editProfileBtn">Edit Profile</button>
+      </div>
+    </div>
+
+    <div class="profile-editor" id="profileEditor">
+      <form class="profile-form" id="profileForm">
+        <input id="myName" placeholder="Your name" />
+        <input id="myAge" placeholder="Age" />
+        <input id="myPronouns" placeholder="Pronouns" />
+        <input id="myIdentity" placeholder="Identity" />
+        <input id="myDistance" placeholder="Distance (e.g. 📍 3 mi)" />
+        <input id="myPhoto" placeholder="Photo URL" />
+        <input id="myTags" placeholder="Tags separated by commas" />
+        <textarea id="myBio" placeholder="Bio"></textarea>
+        <button type="submit" class="like">Save Profile</button>
+      </form>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><strong id="likeCount">0</strong><span>Likes</span></div>
+      <div class="stat"><strong id="passCount">0</strong><span>Passes</span></div>
+      <div class="stat"><strong id="matchCount">0</strong><span>Matches</span></div>
+    </div>
+
+    <div class="stack">
+      <div class="card back" id="nextCard">
+        <div class="photo" id="nextPhoto"></div>
+      </div>
+
+      <div class="card" id="mainCard">
+        <div class="overlay nope" id="nopeOverlay">NOPE</div>
+        <div class="overlay like" id="likeOverlay">LIKE</div>
+        <div class="photo" id="mainPhoto"></div>
+        <div class="content">
+          <div class="name-row">
+            <div class="name" id="mainName"></div>
+            <div class="distance" id="mainDistance"></div>
+          </div>
+          <div class="tags" id="mainTags"></div>
+          <p class="bio" id="mainBio"></p>
+        </div>
+      </div>
+
+      <div class="empty" id="emptyState">
+        <div>
+          <h2>No more profiles</h2>
+          <p>Add your own profile or refresh later for more matches.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button class="pass" id="passBtn">Pass</button>
+      <button class="like" id="likeBtn">Like</button>
+    </div>
+  </div>
+
+  <div class="match" id="matchBanner" aria-hidden="true">
+    <div class="panel">
+      <h2 id="matchTitle">It’s a match! 💜</h2>
+      <p id="matchText">You matched with someone.</p>
+      <button class="like full-btn" id="openChatBtn">Open Chat</button>
+      <button class="ghost-btn" id="closeMatch">Close</button>
+    </div>
+  </div>
+
+  <div class="chat" id="chatModal" aria-hidden="true">
+    <div class="panel chat-box">
+      <h3 id="chatName">Chat</h3>
+      <div class="messages" id="messages">
+        <p class="msg them">Heyyy 💜</p>
+        <p class="msg me">Hi! Nice to match with you.</p>
+      </div>
+      <div class="chat-input">
+        <input id="chatInput" placeholder="Type a message..." />
+        <button class="like" id="sendBtn">Send</button>
+      </div>
+      <button class="ghost-btn" id="closeChat">Back</button>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "pride-match-profiles";
+    const MY_PROFILE_KEY = "pride-match-my-profile";
+    const STATE_KEY = "pride-match-state";
+
+    const defaultProfiles = [
+      {
+        name: "Alex",
+        age: 29,
+        pronouns: "she/her",
+        identity: "trans woman, bi",
+        distance: "📍 8 mi",
+        photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1200&q=80",
+        tags: ["music", "cafes", "art"],
+        bio: "Sweet, nerdy, and into late-night playlists, ramen dates, and silly flirting. Looking for real chemistry and kind energy."
+      },
+      {
+        name: "Jordan",
+        age: 27,
+        pronouns: "they/them",
+        identity: "nonbinary, queer",
+        distance: "📍 4 mi",
+        photo: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80",
+        tags: ["books", "hiking", "film"],
+        bio: "Big on softness, good banter, and slow-burn connections. Coffee, bookstores, and nature walks are my happy place."
+      },
+      {
+        name: "Mina",
+        age: 31,
+        pronouns: "she/they",
+        identity: "lesbian, design",
+        distance: "📍 12 mi",
+        photo: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=1200&q=80",
+        tags: ["karaoke", "food", "travel"],
+        bio: "Design nerd with chaotic karaoke energy. I love bold style, kind people, and trying every dumpling place in town."
+      },
+      {
+        name: "Sam",
+        age: 26,
+        pronouns: "he/they",
+        identity: "queer, photographer",
+        distance: "📍 6 mi",
+        photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1200&q=80",
+        tags: ["sunsets", "street food", "dance"],
+        bio: "Looking for someone kind, curious, and down to build something real with lots of laughing."
+      }
+    ];
+
+    let profiles = loadProfiles();
+    let myProfile = loadMyProfile();
+    let index = 0;
+    let startX = 0;
+    let currentX = 0;
+    let dragging = false;
+    let locked = false;
+    let likes = 0;
+    let passes = 0;
+    let matches = 0;
+    let lastMatchedProfile = null;
+
+    const mainCard = document.getElementById("mainCard");
+    const nextCard = document.getElementById("nextCard");
+    const mainPhoto = document.getElementById("mainPhoto");
+    const nextPhoto = document.getElementById("nextPhoto");
+    const mainName = document.getElementById("mainName");
+    const mainDistance = document.getElementById("mainDistance");
+    const mainTags = document.getElementById("mainTags");
+    const mainBio = document.getElementById("mainBio");
+    const passBtn = document.getElementById("passBtn");
+    const likeBtn = document.getElementById("likeBtn");
+    const nopeOverlay = document.getElementById("nopeOverlay");
+    const likeOverlay = document.getElementById("likeOverlay");
+    const matchBanner = document.getElementById("matchBanner");
+    const closeMatch = document.getElementById("closeMatch");
+    const openChatBtn = document.getElementById("openChatBtn");
+    const chatModal = document.getElementById("chatModal");
+    const closeChat = document.getElementById("closeChat");
+    const chatName = document.getElementById("chatName");
+    const messages = document.getElementById("messages");
+    const chatInput = document.getElementById("chatInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const emptyState = document.getElementById("emptyState");
+    const likeCount = document.getElementById("likeCount");
+    const passCount = document.getElementById("passCount");
+    const matchCount = document.getElementById("matchCount");
+    const editProfileBtn = document.getElementById("editProfileBtn");
+    const profileEditor = document.getElementById("profileEditor");
+    const profileForm = document.getElementById("profileForm");
+
+    const form = {
+      name: document.getElementById("myName"),
+      age: document.getElementById("myAge"),
+      pronouns: document.getElementById("myPronouns"),
+      identity: document.getElementById("myIdentity"),
+      distance: document.getElementById("myDistance"),
+      photo: document.getElementById("myPhoto"),
+      tags: document.getElementById("myTags"),
+      bio: document.getElementById("myBio")
+    };
+
+    function loadProfiles() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : defaultProfiles;
+    }
+
+    function saveProfiles() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
+    }
+
+    function loadMyProfile() {
+      const saved = localStorage.getItem(MY_PROFILE_KEY);
+      return saved ? JSON.parse(saved) : {
+        name: "Your Profile",
+        age: "",
+        pronouns: "",
+        identity: "",
+        distance: "📍 Nearby",
+        photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1200&q=80",
+        tags: ["new here"],
+        bio: "Write a short bio here."
+      };
+    }
+
+    function saveMyProfile() {
+      localStorage.setItem(MY_PROFILE_KEY, JSON.stringify(myProfile));
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem(STATE_KEY);
+      if (!saved) return;
+      const state = JSON.parse(saved);
+      index = state.index || 0;
+      likes = state.likes || 0;
+      passes = state.passes || 0;
+      matches = state.matches || 0;
+      lastMatchedProfile = state.lastMatchedProfile || null;
+    }
+
+    function saveState() {
+      localStorage.setItem(STATE_KEY, JSON.stringify({
+        index,
+        likes,
+        passes,
+        matches,
+        lastMatchedProfile
+      }));
+    }
+
+    function updateStats() {
+      likeCount.textContent = likes;
+      passCount.textContent = passes;
+      matchCount.textContent = matches;
+    }
+
+    function renderProfileForm() {
+      form.name.value = myProfile.name || "";
+      form.age.value = myProfile.age || "";
+      form.pronouns.value = myProfile.pronouns || "";
+      form.identity.value = myProfile.identity || "";
+      form.distance.value = myProfile.distance || "";
+      form.photo.value = myProfile.photo || "";
+      form.tags.value = (myProfile.tags || []).join(", ");
+      form.bio.value = myProfile.bio || "";
+    }
+
+    function updateCurrentProfileFromForm() {
+      myProfile = {
+        name: form.name.value.trim() || "Your Profile",
+        age: form.age.value.trim(),
+        pronouns: form.pronouns.value.trim(),
+        identity: form.identity.value.trim(),
+        distance: form.distance.value.trim() || "📍 Nearby",
+        photo: form.photo.value.trim() || myProfile.photo,
+        tags: form.tags.value.split(",").map(t => t.trim()).filter(Boolean),
+        bio: form.bio.value.trim() || "Write a short bio here."
+      };
+      saveMyProfile();
+    }
+
+    function renderCard() {
+      if (index >= profiles.length) {
+        mainCard.style.opacity = "0";
+        nextCard.style.opacity = "0";
+        emptyState.classList.add("show");
+        passBtn.disabled = true;
+        likeBtn.disabled = true;
+        return;
+      }
+
+      emptyState.classList.remove("show");
+      passBtn.disabled = false;
+      likeBtn.disabled = false;
+
+      const p = profiles[index];
+      const n = profiles[index + 1];
+
+      mainPhoto.style.backgroundImage = `url('${p.photo}')`;
+      mainName.textContent = p.age ? `${p.name}, ${p.age}` : p.name;
+      mainDistance.textContent = p.distance;
+      mainBio.textContent = p.bio;
+      mainTags.innerHTML = [
+        p.pronouns,
+        p.identity,
+        ...(p.tags || [])
+      ].filter(Boolean).map(t => `<span class="tag">${t}</span>`).join("");
+
+      if (n) {
+        nextPhoto.style.backgroundImage = `url('${n.photo}')`;
+        nextCard.style.opacity = ".72";
+      } else {
+        nextCard.style.opacity = "0";
+      }
+
+      mainCard.style.transition = "none";
+      mainCard.style.transform = "translateX(0px) rotate(0deg)";
+      mainCard.style.opacity = "1";
+      nopeOverlay.style.opacity = "0";
+      likeOverlay.style.opacity = "0";
+      locked = false;
+    }
+
+    function openChat(profile) {
+      chatName.textContent = `Chat with ${profile.name}`;
+      messages.innerHTML = `
+        <p class="msg them">Heyyy 💜</p>
+        <p class="msg me">Hi ${profile.name.split(",")[0]}! Nice to match with you.</p>
+      `;
+      chatModal.classList.add("show");
+      chatModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeChatModal() {
+      chatModal.classList.remove("show");
+      chatModal.setAttribute("aria-hidden", "true");
+    }
+
+    function showMatch(profile) {
+      lastMatchedProfile = profile;
+      matches += 1;
+      updateStats();
+      saveState();
+
+      document.getElementById("matchTitle").textContent = "It’s a match! 💜";
+      document.getElementById("matchText").textContent = `You and ${profile.name} liked each other.`;
+      matchBanner.classList.add("show");
+      matchBanner.setAttribute("aria-hidden", "false");
+    }
+
+    function advance(direction) {
+      if (locked || index >= profiles.length) return;
+      locked = true;
+
+      const profile = profiles[index];
+      const width = window.innerWidth;
+      const offX = direction === "like" ? width : -width;
+      const rot = direction === "like" ? 18 : -18;
+
+      mainCard.style.transition = "transform .26s cubic-bezier(.2,.8,.2,1), opacity .26s ease";
+      mainCard.style.transform = `translateX(${offX}px) rotate(${rot}deg)`;
+      mainCard.style.opacity = "0";
+
+      if (direction === "like") {
+        likes += 1;
+        if (index % 2 === 0) showMatch(profile);
+      } else {
+        passes += 1;
+      }
+
+      updateStats();
+      saveState();
+
+      setTimeout(() => {
+        index += 1;
+        saveState();
+        renderCard();
+      }, 230);
+    }
+
+    mainCard.addEventListener("pointerdown", (e) => {
+      if (locked || index >= profiles.length) return;
+      dragging = true;
+      startX = e.clientX;
+      currentX = 0;
+      mainCard.setPointerCapture(e.pointerId);
+    });
+
+    mainCard.addEventListener("pointermove", (e) => {
+      if (!dragging || locked || index >= profiles.length) return;
+
+      currentX = e.clientX - startX;
+      const rot = currentX / 18;
+      mainCard.style.transform = `translateX(${currentX}px) rotate(${rot}deg)`;
+
+      const opacity = Math.min(Math.abs(currentX) / 120, 1);
+      if (currentX > 0) {
+        likeOverlay.style.opacity = opacity;
+        nopeOverlay.style.opacity = "0";
+      } else {
+        nopeOverlay.style.opacity = opacity;
+        likeOverlay.style.opacity = "0";
+      }
+    });
+
+    function endDrag() {
+      if (!dragging || locked) return;
+      dragging = false;
+
+      if (Math.abs(currentX) > 110) {
+        advance(currentX > 0 ? "like" : "pass");
+      } else {
+        renderCard();
+      }
+    }
+
+    mainCard.addEventListener("pointerup", endDrag);
+    mainCard.addEventListener("pointercancel", endDrag);
+
+    passBtn.addEventListener("click", () => advance("pass"));
+    likeBtn.addEventListener("click", () => advance("like"));
+
+    closeMatch.addEventListener("click", () => {
+      matchBanner.classList.remove("show");
+      matchBanner.setAttribute("aria-hidden", "true");
+    });
+
+    openChatBtn.addEventListener("click", () => {
+      if (lastMatchedProfile) openChat(lastMatchedProfile);
+    });
+
+    closeChat.addEventListener("click", closeChatModal);
+
+    chatModal.addEventListener("click", (e) => {
+      if (e.target === chatModal) closeChatModal();
+    });
+
+    sendBtn.addEventListener("click", () => {
+      const text = chatInput.value.trim();
+      if (!text) return;
+      const msg = document.createElement("p");
+      msg.className = "msg me";
+      msg.textContent = text;
+      messages.appendChild(msg);
+      chatInput.value = "";
+      messages.scrollTop = messages.scrollHeight;
+    });
+
+    chatInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") sendBtn.click();
+    });
+
+    editProfileBtn.addEventListener("click", () => {
+      profileEditor.classList.toggle("show");
+      if (profileEditor.classList.contains("show")) renderProfileForm();
+    });
+
+    profileForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      updateCurrentProfileFromForm();
+      profileEditor.classList.remove("show");
+    });
+
+    renderProfileForm();
+    updateStats();
+    loadState();
+    renderCard();
+  </script>
+</body>
+</html>
